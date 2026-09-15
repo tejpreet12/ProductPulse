@@ -9,7 +9,9 @@
     "ios": {
       "supportsTablet": true
     },
+    "scheme": "productpulse",
     "android": {
+      "package": "com.tejpreet.productpulse",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -20,6 +22,16 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+
+        { "color": "#1F6FEB", "defaultChannel": "reminders" }
+      ]
+    ]
   }
 }
+
+   
