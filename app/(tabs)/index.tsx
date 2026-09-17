@@ -71,7 +71,9 @@ export default function ProductsScreen() {
             />
           )}
           onEndReachedThreshold={0.5}
-          onEndReached={() => hasNextPage && fetchNextPage()}
+          onEndReached={() =>
+            hasNextPage && !isFetchingNextPage && fetchNextPage()
+          }
           refreshing={isFetching && !isFetchingNextPage}
           onRefresh={refetch}
           ListFooterComponent={
