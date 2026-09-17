@@ -6,14 +6,25 @@ import { COMMON_SIZES } from "@/lib/constants";
 import { Rating } from "../ui/Rating";
 import FavoriteButton from "../ui/FavoriteButton";
 
+type ProductCardData = Pick<
+  ProductListItem,
+  | "id"
+  | "title"
+  | "thumbnail"
+  | "price"
+  | "rating"
+  | "category"
+  | "availabilityStatus"
+>;
+
 type ProductCardProps = {
-  product: ProductListItem;
+  product: ProductCardData;
   isFavorite: boolean;
   onToggleFavorite: () => void;
   onPress: () => void;
 };
 
-const STOCK_COLORS: Record<ProductListItem["availabilityStatus"], string> = {
+const STOCK_COLORS: Record<ProductCardData["availabilityStatus"], string> = {
   "In Stock": COLORS.green,
   "Low Stock": COLORS.yellow,
   "Out of Stock": COLORS.deep_red,
@@ -27,7 +38,12 @@ const ProductCard = ({
 }: ProductCardProps) => {
   return (
     <Pressable onPress={onPress} style={styles.card}>
-      <Image source={{ uri: product.thumbnail }} resizeMode="cover" height={mvs(100)} width={ms(100)} />
+      <Image
+        source={{ uri: product.thumbnail }}
+        resizeMode="cover"
+        height={mvs(100)}
+        width={ms(100)}
+      />
 
       <View style={styles.body}>
         <Text style={styles.title} numberOfLines={2}>

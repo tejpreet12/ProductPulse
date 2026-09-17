@@ -3,6 +3,7 @@ import { ProductListItem } from "@/api/types";
 import FavoriteButton from "@/components/ui/FavoriteButton";
 import { Rating } from "@/components/ui/Rating";
 import { ms, mvs } from "@/lib/scaling-units";
+import { parseProductId } from "@/lib/validation";
 import {
   favoritesActions,
   selectIsFavorite,
@@ -31,10 +32,11 @@ const STOCK_COLORS: Record<ProductListItem["availabilityStatus"], string> = {
 };
 
 export default function ProductDetailScreen() {
-  const { id: productId } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const productId = parseProductId(id);
 
   const { width } = useWindowDimensions();
-  const isFavorite = useAppSelector(selectIsFavorite(Number(productId) ?? -1));
+  const isFavorite = useAppSelector(selectIsFavorite(productId ?? -1));
   const dispatch = useDispatch();
   const {
     data: product,
@@ -44,14 +46,13 @@ export default function ProductDetailScreen() {
     refetch,
   } = useGetProductByIdQuery(Number(productId) ?? skipToken);
 
-  if (productId === undefined) {
+  if (id === undefined) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
-  if (!product) return null;
 
   if (productId === null) {
     return <Center text="That product link doesn't look right." />;
@@ -64,6 +65,14 @@ export default function ProductDetailScreen() {
       </View>
     );
   }
+
+  if (isError) {
+    const status = "status" in error ? error.status : undefined;
+    if (status === 404) return <Center text="We couldn't find that product." />;
+    return <Center text="Something went wrong." onRetry={refetch} />;
+  }
+
+  if (!product) return null;
 
   return (
     <ScrollView>
