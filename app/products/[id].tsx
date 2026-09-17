@@ -3,6 +3,12 @@ import { ProductListItem } from "@/api/types";
 import FavoriteButton from "@/components/ui/FavoriteButton";
 import { Rating } from "@/components/ui/Rating";
 import { ms, mvs } from "@/lib/scaling-units";
+import {
+  favoritesActions,
+  selectIsFavorite,
+  toFavoriteRecord,
+} from "@/store/favoritesSlice";
+import { useAppSelector } from "@/store/hooks";
 import { COLORS } from "@/theme";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { Stack, useLocalSearchParams } from "expo-router";
@@ -16,6 +22,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { useDispatch } from "react-redux";
 
 const STOCK_COLORS: Record<ProductListItem["availabilityStatus"], string> = {
   "In Stock": COLORS.green,
@@ -27,7 +34,8 @@ export default function ProductDetailScreen() {
   const { id: productId } = useLocalSearchParams<{ id: string }>();
 
   const { width } = useWindowDimensions();
-
+  const isFavorite = useAppSelector(selectIsFavorite(Number(productId) ?? -1));
+  const dispatch = useDispatch();
   const {
     data: product,
     isLoading,
@@ -83,7 +91,12 @@ export default function ProductDetailScreen() {
         <View style={styles.titleRow}>
           <Text style={styles.title}>{product.title}</Text>
         </View>
-        <FavoriteButton isFavorite={false} onToggle={() => {}} />
+        <FavoriteButton
+          isFavorite={isFavorite}
+          onToggle={() =>
+            dispatch(favoritesActions.toggled(toFavoriteRecord(product)))
+          }
+        />
 
         <View style={styles.priceRow}>
           <Text style={styles.price}>{product.price}</Text>

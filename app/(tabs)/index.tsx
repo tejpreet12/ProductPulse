@@ -7,17 +7,32 @@ import ProductCard from "@/components/product/ProductCard";
 import SearchBar from "@/components/ui/SearchBar";
 import { ms, mvs } from "@/lib/scaling-units";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
+import {
+  favoritesActions,
+  selectFavorites,
+  toFavoriteRecord,
+} from "@/store/favoritesSlice";
+import { useAppSelector } from "@/store/hooks";
 import { COLORS } from "@/theme";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useDispatch } from "react-redux";
 
 export default function ProductsScreen() {
   const [isFavorite, setIsFavorite] = useState(true);
   const [category, setCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+
+  const dispatch = useDispatch();
+
+  const favorites = useAppSelector(selectFavorites);
+  const favoriteIds = useMemo(
+    () => new Set(favorites.map((f) => f.id)),
+    [favorites],
+  );
 
   const debouncedQuery = useDebouncedValue(query.trim(), 400);
   const isSearching = debouncedQuery.length > 0;
@@ -63,9 +78,9 @@ export default function ProductsScreen() {
           renderItem={({ item }) => (
             <ProductCard
               product={item}
-              isFavorite={false}
+              isFavorite={favoriteIds.has(item.id)}
               onToggleFavorite={() => {
-                // TODO : dispatch favorites.toggled once favoritesSlice exists.
+                dispatch(favoritesActions.toggled(toFavoriteRecord(item)));
               }}
               onPress={() => router.push(`/products/${item.id}`)}
             />

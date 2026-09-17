@@ -3,11 +3,11 @@ export interface ProductListItem {
   title: string;
   price: number;
   rating: number;
-  stock: number;
+  stock?: number;
   category: string;
   thumbnail: string;
   availabilityStatus: "In Stock" | "Low Stock" | "Out of Stock";
-  discountPercentage: number;
+  discountPercentage?: number;
 }
 
 export interface Product extends ProductListItem {
