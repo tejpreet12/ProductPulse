@@ -1,7 +1,6 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import React from "react";
 import { useGetCategoriesQuery } from "@/api/productsApi";
 import { ms, mvs } from "@/lib/scaling-units";
+import { FlatList, Pressable, StyleSheet, Text } from "react-native";
 
 type CategoryFilterProps = {
   selected: string | null;

@@ -15,10 +15,14 @@ const FavoriteButton = ({ isFavorite, onToggle }: FavoriteButtonProps) => {
         <Ionicons
           name="heart-sharp"
           color={COLORS.red}
-          size={COMMON_SIZES["8xl"]}
+          size={COMMON_SIZES["5xl"]}
         />
       ) : (
-        <Ionicons name="heart-outline" color={COLORS.black} size={COMMON_SIZES["8xl"]} />
+        <Ionicons
+          name="heart-outline"
+          color={COLORS.black}
+          size={COMMON_SIZES["5xl"]}
+        />
       )}
     </Pressable>
   );
