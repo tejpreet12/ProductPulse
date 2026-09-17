@@ -55,3 +55,10 @@ export const productsApi = createApi({
     }),
   }),
 });
+
+export const {
+  useGetCategoriesQuery,
+  useGetProductsInfiniteQuery,
+  useSearchProductsInfiniteQuery,
+  useGetProductByIdQuery,
+} = productsApi;
