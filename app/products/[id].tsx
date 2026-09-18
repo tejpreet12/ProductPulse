@@ -106,10 +106,6 @@ export default function ProductDetailScreen() {
       return;
     }
 
-    if (existingReminder) {
-      await cancelReminder(existingReminder.notificationId);
-    }
-
     const notificationId = await scheduleProductRemainder({
       productId,
       title: product.title,
@@ -188,13 +184,7 @@ export default function ProductDetailScreen() {
 
         <Text style={styles.description}>{product.description}</Text>
 
-        <Pressable
-          style={styles.reminderButton}
-          onPress={() => {
-            setPermissionDenied(false);
-            setSheetVisible(true);
-          }}
-        >
+        <Pressable style={styles.reminderButton} onPress={handleReminderPress}>
           <Text style={styles.reminderButtonText}>
             {existingReminder ? "Cancel reminder" : "Set reminder"}
           </Text>
