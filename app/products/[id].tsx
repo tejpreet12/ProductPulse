@@ -5,6 +5,20 @@ import { Rating } from "@/components/ui/Rating";
 import { ms, mvs } from "@/lib/scaling-units";
 import { parseProductId } from "@/lib/validation";
 import {
+  presetToDate,
+  ReminderPreset,
+  ReminderSheet,
+} from "@/components/product/ReminderSheet";
+import {
+  cancelReminder,
+  requestNotificationPermission,
+  scheduleProductRemainder,
+} from "@/notifications/notificationService";
+import {
+  remindersActions,
+  selectReminderForProduct,
+} from "@/store/remindersSlice";
+import {
   favoritesActions,
   selectIsFavorite,
   toFavoriteRecord,
@@ -17,6 +31,7 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,6 +39,7 @@ import {
   View,
 } from "react-native";
 import { useDispatch } from "react-redux";
+import { useState } from "react";
 
 const STOCK_COLORS: Record<ProductListItem["availabilityStatus"], string> = {
   "In Stock": COLORS.green,
@@ -32,8 +48,15 @@ const STOCK_COLORS: Record<ProductListItem["availabilityStatus"], string> = {
 };
 
 export default function ProductDetailScreen() {
+  const [sheetVisible, setSheetVisible] = useState(false);
+  const [permissionDenied, setPermissionDenied] = useState(false);
+
   const { id } = useLocalSearchParams<{ id: string }>();
   const productId = parseProductId(id);
+
+  const existingReminder = useAppSelector(
+    selectReminderForProduct(productId ?? -1),
+  );
 
   const { width } = useWindowDimensions();
   const isFavorite = useAppSelector(selectIsFavorite(productId ?? -1));
@@ -74,6 +97,47 @@ export default function ProductDetailScreen() {
 
   if (!product) return null;
 
+  const handleSelectPreset = async (preset: ReminderPreset) => {
+    const fireAt = presetToDate(preset);
+
+    const permission = await requestNotificationPermission();
+    if (permission !== "granted") {
+      setPermissionDenied(true);
+      return;
+    }
+
+    if (existingReminder) {
+      await cancelReminder(existingReminder.notificationId);
+    }
+
+    const notificationId = await scheduleProductRemainder({
+      productId,
+      title: product.title,
+      fireAt,
+    });
+
+    dispatch(
+      remindersActions.added({
+        notificationId,
+        productId,
+        productTitle: product.title,
+        route: `/products/${productId}`,
+        scheduledAt: fireAt.getTime(),
+        createdAt: Date.now(),
+      }),
+    );
+    setSheetVisible(false);
+  };
+
+  const handleReminderPress = async () => {
+    if (existingReminder) {
+      await cancelReminder(existingReminder.notificationId);
+      dispatch(remindersActions.removed(existingReminder.notificationId));
+      return;
+    }
+    setPermissionDenied(false);
+    setSheetVisible(true);
+  };
   return (
     <ScrollView>
       <Stack.Screen options={{ title: product.title ?? "Product" }} />
@@ -124,8 +188,25 @@ export default function ProductDetailScreen() {
 
         <Text style={styles.description}>{product.description}</Text>
 
-        {/*TODO :: remainder BUtton */}
+        <Pressable
+          style={styles.reminderButton}
+          onPress={() => {
+            setPermissionDenied(false);
+            setSheetVisible(true);
+          }}
+        >
+          <Text style={styles.reminderButtonText}>
+            {existingReminder ? "Cancel reminder" : "Set reminder"}
+          </Text>
+        </Pressable>
       </View>
+
+      <ReminderSheet
+        visible={sheetVisible}
+        permissionDenied={permissionDenied}
+        onSelect={handleSelectPreset}
+        onDismiss={() => setSheetVisible(false)}
+      />
     </ScrollView>
   );
 }
@@ -181,5 +262,17 @@ const styles = StyleSheet.create({
     color: COLORS.charcoal,
     lineHeight: ms(20),
     marginTop: ms(8),
+  },
+  reminderButton: {
+    marginTop: ms(12),
+    paddingVertical: mvs(12),
+    borderRadius: ms(10),
+    backgroundColor: "#1F6FEB",
+    alignItems: "center",
+  },
+  reminderButtonText: {
+    color: COLORS.white,
+    fontSize: ms(14),
+    fontWeight: "700",
   },
 });
