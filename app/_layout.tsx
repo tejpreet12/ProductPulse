@@ -1,3 +1,5 @@
+import "@/notifications/notificationService";
+import { useNotificationRouting } from "@/notifications/useNotificationRouting";
 import { persistor, store } from "@/store";
 import { Stack } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
@@ -8,6 +10,8 @@ import { PersistGate } from "redux-persist/integration/react";
 export const unstable_settings = { anchor: "(tabs)" };
 
 export default function RootLayout() {
+  useNotificationRouting();
+
   return (
     <Provider store={store}>
       <PersistGate
